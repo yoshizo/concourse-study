@@ -15,7 +15,7 @@ resources:
     access_key_id: ACCESS_KEY_ID
     secret_access_key: SECRET_ACCESS_KEY
     endpoint: localstack.example.com:4572
-    region_name: us-east-1
+    region_name: ap-northeast-1
     disable_ssl: true
 - name: api-image
   type: docker-image
@@ -98,7 +98,7 @@ jobs:
 - name: maven-build
   plan:
   - get: src
-    #  trigger: true
+    #trigger: true
   - task: build
     file: src/ci/build.yml
   - put: api
@@ -109,6 +109,8 @@ jobs:
   plan:
   - get: src
   - get: api
+    #trigger: true
+    passed: [maven-build]
   - put: api-image
     params:
       build: src/ci

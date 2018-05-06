@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -eu
+
+export PORT_WEB_UI=8081
+export DEFAULT_REGION="ap-northeast-1"
+
+docker-compose up -d
+
+sleep 10s
+
+aws s3 mb s3://releases
