@@ -7,13 +7,6 @@ resources:
     branch: master
     username: ((GIT_USERNAME))
     password: ((GIT_PASSWORD))
-#- name: batch
-#  type: s3
-#  source:
-#    bucket: releases
-#    regexp: sample-app/18.05.00.0000/sample-app-batch-(.*).jar
-#    access_key_id: ACCESS_KEY_ID
-#    secret_access_key: SECRET_ACCESS_KEY
 - name: api
   type: s3
   source:
@@ -21,8 +14,23 @@ resources:
     regexp: sample-app/18.05.00.0000/sample-app-(.*).jar
     access_key_id: ACCESS_KEY_ID
     secret_access_key: SECRET_ACCESS_KEY
-    endpoint: s3://localstack.example.com:4572
+    endpoint: localstack.example.com:4572
     region_name: us-east-1
+    disable_ssl: true
+- name: api-image
+  type: docker-image
+  source:
+    repository: yoshizo55/sample-app-api
+    email: ((EMAIL))
+    username: ((DOCKER_USERNAME))
+    password: ((DOCKER_PASSWORD))
+#- name: batch
+#  type: s3
+#  source:
+#    bucket: releases
+#    regexp: sample-app/18.05.00.0000/sample-app-batch-(.*).jar
+#    access_key_id: ACCESS_KEY_ID
+#    secret_access_key: SECRET_ACCESS_KEY
 #- name: front
 #  type: s3
 #  source:
@@ -58,13 +66,13 @@ resources:
 #    repository: tomcat
 #    tags: 8.5.30-jre8-slim
 
-- name: front-image
-  type: docker-image
-  source:
-    repository: yoshizo55/sample-app
-    email: ((EMAIL))
-    username: ((DOCKER_USERNAME))
-    password: ((DOCKER_PASSWORD))
+#- name: front-image
+#  type: docker-image
+#  source:
+#    repository: yoshizo55/sample-app
+#    email: ((EMAIL))
+#    username: ((DOCKER_USERNAME))
+#    password: ((DOCKER_PASSWORD))
 
 #- name: mysql-schema
 #  type: docker-image
@@ -87,16 +95,31 @@ resources:
 #    repository: concourse/git-resource
 
 jobs:
-- name: build
+- name: maven-build
   plan:
   - get: src
     #  trigger: true
   - task: build
     file: src/ci/build.yml
-- name: upload
-  plan:
   - put: api
     params:
       file: target/sample-app-*.jar
       acl: public-read
-  - put: front-image
+- name: docker-build
+  plan:
+  - get: src
+  - get: api
+  - put: api-image
+    params:
+      build: src/ci
+      build_args:
+        JAR_FILE: sample-app-*.jar
+  - task: run
+    config:
+      platform: linux
+      image_resource:
+        type: docker_image
+        source:
+          repository: yoshizo55/sample-app
+      run:
+        path: true
