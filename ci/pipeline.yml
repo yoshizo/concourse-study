@@ -1,4 +1,10 @@
 ---
+resource_types:
+- name: concourse-pipeline
+  type: docker-image
+  source:
+    repository: concourse/concourse-pipeline-resource
+
 resources:
 - name: src
   type: git
@@ -7,6 +13,13 @@ resources:
     branch: master
     username: ((GIT_USERNAME))
     password: ((GIT_PASSWORD))
+- name: pipeline
+  type: concourse-pipeline
+  source:
+    target: http://concourse.example.com:8080
+    insecure: "true"
+    teams:
+    - name: main
 - name: api
   type: s3
   source:
@@ -95,10 +108,21 @@ resources:
 #    repository: concourse/git-resource
 
 jobs:
+- name: set-pipeline
+  plan:
+  - get: src
+  - put: pipeline
+    params:
+      pipelines:
+      - name: sample-app
+        team: main
+        config_file: src/ci/pipeline.yml
+        unpaused: true
 - name: maven-build
   plan:
   - get: src
     #trigger: true
+    passed: [set-pipeline]
   - task: build
     file: src/ci/build.yml
   - put: api
