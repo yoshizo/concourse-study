@@ -11,35 +11,44 @@ resources:
 #  type: s3
 #  source:
 #    bucket: releases
-#    regexp: scm-trade/18.05.00.0000/scm-trade-batch-(.*).jar
+#    regexp: sample-app/18.05.00.0000/sample-app-batch-(.*).jar
 #    access_key_id: ACCESS_KEY_ID
 #    secret_access_key: SECRET_ACCESS_KEY
+- name: api
+  type: s3
+  source:
+    bucket: releases
+    regexp: sample-app/18.05.00.0000/sample-app-(.*).jar
+    access_key_id: ACCESS_KEY_ID
+    secret_access_key: SECRET_ACCESS_KEY
+    endpoint: s3://localstack.example.com:4572
+    region_name: us-east-1
 #- name: front
 #  type: s3
 #  source:
 #    bucket: releases
-#    regexp: scm-trade/18.05.00.0000/scm-trade-(.*).war
+#    regexp: sample-app/18.05.00.0000/sample-app-(.*).war
 #    access_key_id: ACCESS_KEY_ID
 #    secret_access_key: SECRET_ACCESS_KEY
 #- name: typelayout
 #  type: s3
 #  source:
 #    bucket: releases
-#    regexp: scm-trade/18.05.00.0000/scm-trade-typelayout-(.*).zip
+#    regexp: sample-app/18.05.00.0000/sample-app-typelayout-(.*).zip
 #    access_key_id: ACCESS_KEY_ID
 #    secret_access_key: SECRET_ACCESS_KEY
 #- name: autoindex
 #  type: s3
 #  source:
 #    bucket: releases
-#    regexp: scm-trade/18.05.00.0000/scm-trade-autoindex-(.*).jar
+#    regexp: sample-app/18.05.00.0000/sample-app-autoindex-(.*).jar
 #    access_key_id: ACCESS_KEY_ID
 #    secret_access_key: SECRET_ACCESS_KEY
 #- name: sql
 #  type: s3
 #  source:
 #    bucket: releases
-#    regexp: scm-trade/18.05.00.0000/scm-trade-sql-(.*).zip
+#    regexp: sample-app/18.05.00.0000/sample-app-sql-(.*).zip
 #    access_key_id: ACCESS_KEY_ID
 #    secret_access_key: SECRET_ACCESS_KEY
 
@@ -84,4 +93,10 @@ jobs:
     #  trigger: true
   - task: build
     file: src/ci/build.yml
+- name: upload
+  plan:
+  - put: api
+    params:
+      file: target/sample-app-*.jar
+      acl: public-read
   - put: front-image

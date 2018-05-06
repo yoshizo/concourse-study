@@ -7,6 +7,8 @@ image_resource:
     tags: 3.5.3-jdk-8-alpine
 inputs:
   - name: src
+outputs:
+  - name: target
 caches:
   - path: src/m2
 run:
@@ -15,9 +17,12 @@ run:
     - -c
     - |
       set -e
-      cd src
-      rm -rf ~/.m2
-      ln -fs $(pwd)/m2 ~/.m2
+      #cd src
+      #rm -rf ~/.m2
+      #ln -s $(pwd)/m2 ~/.m2
+      du -hs src/m2
       mvn --version
       java -version
-      mvn package
+      #mvn package
+      mvn verify -Dmaven.repo.local=src/m2 -f src
+      cp -r src/target .
