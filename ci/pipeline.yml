@@ -1,0 +1,87 @@
+---
+resources:
+- name: src
+  type: git
+  source:
+    uri: https://github.com/yoshizo/concourse-study
+    branch: master
+    username: ((GIT_USERNAME))
+    password: ((GIT_PASSWORD))
+#- name: batch
+#  type: s3
+#  source:
+#    bucket: releases
+#    regexp: scm-trade/18.05.00.0000/scm-trade-batch-(.*).jar
+#    access_key_id: ACCESS_KEY_ID
+#    secret_access_key: SECRET_ACCESS_KEY
+#- name: front
+#  type: s3
+#  source:
+#    bucket: releases
+#    regexp: scm-trade/18.05.00.0000/scm-trade-(.*).war
+#    access_key_id: ACCESS_KEY_ID
+#    secret_access_key: SECRET_ACCESS_KEY
+#- name: typelayout
+#  type: s3
+#  source:
+#    bucket: releases
+#    regexp: scm-trade/18.05.00.0000/scm-trade-typelayout-(.*).zip
+#    access_key_id: ACCESS_KEY_ID
+#    secret_access_key: SECRET_ACCESS_KEY
+#- name: autoindex
+#  type: s3
+#  source:
+#    bucket: releases
+#    regexp: scm-trade/18.05.00.0000/scm-trade-autoindex-(.*).jar
+#    access_key_id: ACCESS_KEY_ID
+#    secret_access_key: SECRET_ACCESS_KEY
+#- name: sql
+#  type: s3
+#  source:
+#    bucket: releases
+#    regexp: scm-trade/18.05.00.0000/scm-trade-sql-(.*).zip
+#    access_key_id: ACCESS_KEY_ID
+#    secret_access_key: SECRET_ACCESS_KEY
+
+#- name: base-image
+#  type: docker-image
+#  source:
+#    repository: tomcat
+#    tags: 8.5.30-jre8-slim
+
+- name: front-image
+  type: docker-image
+  source:
+    repository: yoshizo55/sample-app
+    email: ((EMAIL))
+    username: ((DOCKER_USERNAME))
+    password: ((DOCKER_PASSWORD))
+
+#- name: mysql-schema
+#  type: docker-image
+#  source:
+#    repository: concourse/git-resource
+#
+#- name: mysql-data
+#  type: docker-image
+#  source:
+#    repository: concourse/git-resource
+#
+#- name: elasticsearch-index
+#  type: docker-image
+#  source:
+#    repository: concourse/git-resource
+#
+#- name: elasticsearch-data
+#  type: docker-image
+#  source:
+#    repository: concourse/git-resource
+
+jobs:
+- name: build
+  plan:
+  - get: src
+    #  trigger: true
+  - task: build
+    file: src/ci/build.yml
+  - put: front-image
